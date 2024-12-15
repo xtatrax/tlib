@@ -17,6 +17,7 @@
 import math
 import shutil
 import os
+import string
 from typing import overload
 
 if __name__ == "__main__":
@@ -96,7 +97,7 @@ class ClUiObje():
 	base_text_color:Color.FG = Color.FG.BLACK
 	isLocal:bool=False
 	def __init__(self) -> None:
-		self.child:ClUiObje=[]
+		self.childlist:ClUiObje=[]
 		self.parent:ClUiObje=None
 		self.rect:Rect
 		return
@@ -153,11 +154,14 @@ class ClUiObje():
 		self.parent = parent
 		return
 	
-	def addChild(self, child:ClUiObje):
+	def addChild(self, child:ClUiObje, name:string):
 		child.__addParent(self)
-		self.child.append(child)
+		self.childlist.append([name,child])
 		return
-	
+
+	def getChild(self,name:string):
+		pass
+
 	def update_color(self):
 		print(self.bg_color + self.base_text_color,end="")
 
@@ -168,12 +172,13 @@ class ClUiObje():
 		print(str,end="")
 
 	def update(self):
-		for o in self.child:
-			o.update()
+		for o in self.childlist:
+			o[1].update()
+
 	def draw(self, in_CanvasSize:Size, in_Point:Point)->int:
 		x=0
-		for child in self.child:
-			x += child.draw(in_CanvasSize,in_Point)
+		for child in self.childlist:
+			x += child[1].draw(in_CanvasSize,in_Point)
 			if x != 0:
 				continue
 		return x
@@ -197,12 +202,12 @@ class ConsoleUserInterface_base():
 
 	
 	def __init__(self) -> None:
-		self.obj:ClUiObje=[]
+		self.objlist:ClUiObje=[]
 		self.updateSize()
 		return
 
-	def addChild(self,child:ClUiObje):
-		self.obj.append(child)
+	def addChild(self,child:ClUiObje,name:string):
+		self.objlist.append([name,child])
 		return
 	
 	def updateSize(self)->os.terminal_size:
@@ -215,8 +220,8 @@ class ConsoleUserInterface_base():
 	
 		columns = size.columns-1
 		lines = size.lines-1
-		for o in self.obj:
-			o.update(Rect(point=Point(x=0,y=0),size=Size(columns,lines)))
+		for o in self.objlist:
+			o[1].update(Rect(point=Point(x=0,y=0),size=Size(columns,lines)))
 		#if (columns < self.size_w_min) :
 		#	return DrawStatus.UnderConsoleSize
 		#if (lines < self.console_size_h_min) :
@@ -226,8 +231,8 @@ class ConsoleUserInterface_base():
 		while( h <= lines):
 			w = 0
 			while( w <= columns):
-				for o in self.obj:
-					w += o.draw(Size( lines , columns ),Point(x=w,y=h))
+				for o in self.objlist:
+					w += o[1].draw(Size( lines , columns ),Point(x=w,y=h))
 			h+=1
 
 if __name__ == "__main__":
